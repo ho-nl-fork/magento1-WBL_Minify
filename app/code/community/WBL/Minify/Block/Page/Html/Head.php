@@ -32,7 +32,7 @@
  * @package    Mage_Page
  * @author     Magento Core Team <core@magentocommerce.com>
  */
-class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
+class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Abstract
 {
 
     /**
@@ -41,7 +41,7 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
      * @param string $name
      * @param string $params
      * @param string $group
-     * @return Mage_Page_Block_Html_Head
+     * @return WBL_Minify_Block_Page_Html_Head
      */
     public function addCss($name, $params = "", $group='nogroup')
     {
@@ -56,7 +56,7 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
      * @param string $name
      * @param string $params
      * @param string $group
-     * @return Mage_Page_Block_Html_Head
+     * @return WBL_Minify_Block_Page_Html_Head
      */
     public function addJs($name, $params = "", $group='nogroup')
     {
@@ -71,7 +71,7 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
      * @param string $name
      * @param string $params
      * @param string $group
-     * @return Mage_Page_Block_Html_Head
+     * @return WBL_Minify_Block_Page_Html_Head
      */
     public function addCssIe($name, $params = "", $group='nogroup')
     {
@@ -86,7 +86,7 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
      * @param string $name
      * @param string $params
      * @param string $group
-     * @return Mage_Page_Block_Html_Head
+     * @return WBL_Minify_Block_Page_Html_Head
      */
     public function addJsIe($name, $params = "", $group='nogroup')
     {
@@ -111,7 +111,7 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
      * @param string $if
      * @param string $cond
      * @param string $group
-     * @return Mage_Page_Block_Html_Head
+     * @return WBL_Minify_Block_Page_Html_Head
      */
     public function addItem($type, $name, $params=null, $if=null, $cond=null, $group='nogroup')
     {
@@ -134,7 +134,7 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
      *
      * @param string $type
      * @param string $name
-     * @return Mage_Page_Block_Html_Head
+     * @return WBL_Minify_Block_Page_Html_Head
      */
     public function removeItem($type, $name)
     {
