@@ -96,6 +96,21 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
 
 
     /**
+     * Add Link element to HEAD entity
+     *
+     * @param string $rel  forward link types
+     * @param string $href URI for linked resource
+     * @param string $group
+     * @return Mage_Page_Block_Html_Head
+     */
+    public function addLinkRel($rel, $href, $group='default')
+    {
+        $this->addItem('link_rel', $href, 'rel="' . $rel . '"', null, null, $group);
+        return $this;
+    }
+
+
+    /**
      * Add HEAD Item
      *
      * Allowed types:
@@ -157,14 +172,15 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
     {
     	$params = $itemParams ? ' ' . $itemParams : '';
     	$href   = $itemName;
+        $group  = isset($itemThe['group']) ? $itemThe['group'] : 'default';
     	switch ($itemType) {
     		case 'rss':
-    			$lines[$itemThe['group']][$itemIf]['other'][] = sprintf('<link href="%s"%s rel="alternate" type="application/rss+xml" />',
+    			$lines[$group][$itemIf]['other'][] = sprintf('<link href="%s"%s rel="alternate" type="application/rss+xml" />',
     			$href, $params
     			);
     			break;
     		case 'link_rel':
-    			$lines[$itemThe['group']][$itemIf]['other'][] = sprintf('<link%s href="%s" />', $params, $href);
+    			$lines[$group][$itemIf]['other'][] = sprintf('<link%s href="%s" />', $params, $href);
     			break;
     	}
     }
