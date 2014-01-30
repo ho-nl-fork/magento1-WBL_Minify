@@ -4,6 +4,7 @@ class WBL_Minify_Helper_Core_Data extends Mage_Core_Helper_Data
 {
     const XML_PATH_MINIFY_ENABLE_YUICOMPRESSOR  = 'dev/js/enable_yuicompressor';
 
+    /** @var ILess_Parser */
     protected $_lessphp = null;
 
 
@@ -93,9 +94,11 @@ class WBL_Minify_Helper_Core_Data extends Mage_Core_Helper_Data
         switch (pathinfo($file, PATHINFO_EXTENSION))
         {
             case 'less':
-                Varien_Profiler::start('lessc::compileFile');
-                $data = $this->_getLessphpModel()->compileFile($file);
-                Varien_Profiler::stop('lessc::compileFile');
+                Varien_Profiler::start('lessc::parseFile');
+                $parser = $this->_getLessphpModel();
+                $parser->parseFile($file);
+                $data = $parser->getCSS();
+                Varien_Profiler::stop('lessc::parseFile');
                 return $data;
             break;
 
@@ -108,14 +111,15 @@ class WBL_Minify_Helper_Core_Data extends Mage_Core_Helper_Data
     /**
      * Get the less compiler
      *
-     * @return lessc
+     * @return ILess_Parser
      */
     protected function _getLessphpModel()
     {
         if ($this->_lessphp === null)
         {
-            require_once Mage::getBaseDir('lib').DS.'lessphp'.DS.'lessc.inc.php';
-            $this->_lessphp = new lessc();
+//            require_once Mage::getBaseDir('lib').'/less/lib/ILess/Autoloader.php';
+//            ILess_Autoloader::register();
+            $this->_lessphp = new ILess_Parser();
         }
         return $this->_lessphp;
     }
@@ -146,7 +150,7 @@ class WBL_Minify_Helper_Core_Data extends Mage_Core_Helper_Data
     public function mergeFiles(array $srcFiles, $targetFile = false, $mustMerge = false,
             $beforeMergeCallback = null, $extensionsFilter = array())
     {
-        try {
+//        try {
             // check whether merger is required
             $shouldMerge = $mustMerge || !$targetFile;
             if (!$shouldMerge) {
@@ -225,9 +229,9 @@ class WBL_Minify_Helper_Core_Data extends Mage_Core_Helper_Data
             }
 
             return true; // no need in merger or merged into file successfully
-        } catch (Exception $e) {
-            Mage::logException($e);
-        }
+//        } catch (Exception $e) {
+//            Mage::logException($e);
+//        }
         return false;
     }
 }
