@@ -43,7 +43,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
      * @param string $group
      * @return WBL_Minify_Block_Page_Html_Head
      */
-    public function addCss($name, $params = "", $group='nogroup')
+    public function addCss($name, $params = "", $group='default')
     {
         $this->addItem('skin_css', $name, $params, null, null, $group);
         return $this;
@@ -58,7 +58,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
      * @param string $group
      * @return WBL_Minify_Block_Page_Html_Head
      */
-    public function addJs($name, $params = "", $group='nogroup')
+    public function addJs($name, $params = "", $group='default')
     {
         $this->addItem('js', $name, $params, null, null, $group);
         return $this;
@@ -73,7 +73,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
      * @param string $group
      * @return WBL_Minify_Block_Page_Html_Head
      */
-    public function addCssIe($name, $params = "", $group='nogroup')
+    public function addCssIe($name, $params = "", $group='default')
     {
         $this->addItem('skin_css', $name, $params, 'IE', null, $group);
         return $this;
@@ -88,7 +88,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
      * @param string $group
      * @return WBL_Minify_Block_Page_Html_Head
      */
-    public function addJsIe($name, $params = "", $group='nogroup')
+    public function addJsIe($name, $params = "", $group='default')
     {
         $this->addItem('js', $name, $params, 'IE', null, $group);
         return $this;
@@ -128,7 +128,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
      * @param string $group
      * @return WBL_Minify_Block_Page_Html_Head
      */
-    public function addItem($type, $name, $params=null, $if=null, $cond=null, $group='nogroup')
+    public function addItem($type, $name, $params=null, $if=null, $cond=null, $group='default')
     {
         if (($type==='skin_css' || $type==='skin_less') && empty($params)) {
             $params = 'media="all"';
