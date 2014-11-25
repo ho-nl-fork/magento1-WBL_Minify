@@ -64,35 +64,40 @@ class ILess_Node_Variable extends ILess_Node
         if ($this->evaluating) {
             throw new ILess_Exception_Compiler(
                 sprintf('Recursive variable definition for %s', $name),
-                null, $this->index,
-                $this->currentFileInfo
+                $this->index, $this->currentFileInfo
             );
         }
 
         $this->evaluating = true;
 
+        $variable = null;
         // variables from the API take precedence
         if ($env->customVariables &&
             $v = $env->customVariables->variable($name)
         ) {
-            $this->evaluating = false;
-
-            return $v->value->compile($env);
-        }
-
-        // search for the variable
-        foreach ($env->frames as $frame) {
-            if ($v = $frame->variable($name)) {
-                $this->evaluating = false;
-
-                return $v->value->compile($env);
+            $variable = $v->value->compile($env);
+        } else {
+            // search for the variable
+            foreach ($env->frames as $frame) {
+                if ($v = $frame->variable($name)) {
+                    $variable = $v->value->compile($env);
+                    break;
+                }
             }
         }
 
-        throw new ILess_Exception_Compiler(
-            sprintf('The variable `%s` is not defined.', $name),
-            null, $this->index,
-            $this->currentFileInfo);
+        if ($variable)
+        {
+            $this->evaluating = false;
+            return $variable;
+        }
+        else
+        {
+            throw new ILess_Exception_Compiler(
+                sprintf('The variable `%s` is not defined.', $name),
+                $this->index, $this->currentFileInfo
+            );
+        }
     }
 
     /**

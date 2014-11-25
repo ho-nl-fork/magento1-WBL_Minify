@@ -108,6 +108,7 @@ class ILess_FunctionRegistry
         'pi' => true,
         'pow' => true,
         'red' => true,
+        'replace' => true,
         'rgb' => true,
         'rgba' => true,
         'round' => true,
@@ -407,6 +408,26 @@ class ILess_FunctionRegistry
     }
 
     /**
+     * Replaces a string or regexp pattern within a string.
+     *
+     * @param object $string
+     * @param object $pattern
+     * @param object $replacement
+     * @param $flags
+     * @return ILess_Node_Quoted
+     */
+    public function replace(ILess_Node $string, ILess_Node $pattern, ILess_Node $replacement, ILess_Node $flags = null)
+    {
+        $flags  = $flags ? $flags->value : '';
+        $limit = strpos($flags, 'g') === false ? 1 : -1;
+        $flags = str_replace('g', '', $flags);
+
+        $string = preg_replace('/' . $pattern->value . '/' . $flags, $replacement->value, $string->value);
+
+        return new ILess_Node_Quoted('"' . $string . '"', $string);
+    }
+
+    /**
      * Inlines a resource and falls back to url() if the ieCompat option is on
      * and the resource is too large, or if you use the function in the browser.
      * If the mime is not given then node uses the mime package to determine the correct mime type.
@@ -474,10 +495,10 @@ class ILess_FunctionRegistry
     /**
      * Rounds up to an integer
      *
-     * @param string $number
+     * @param mixed $number
      * @return ILess_Node_Dimension
      */
-    public function ceil(ILess_Node_Dimension $number)
+    public function ceil($number)
     {
         return new ILess_Node_Dimension(ceil($this->number($number)), $number->unit);
     }
@@ -1147,7 +1168,7 @@ class ILess_FunctionRegistry
         }
 
         if (!$color instanceof ILess_Node_Color) {
-            throw new InvalidArgumentException('Cannot darken the color. Invalid argument given. "%s"');
+            throw new InvalidArgumentException('Cannot darken the color. Invalid color given.');
         }
 
         $percentage = $percentage ? $percentage->value / 100 : 10;
@@ -1648,9 +1669,7 @@ class ILess_FunctionRegistry
     public function svggradient(ILess_Node $direction /*  $stop1, $stop2, ... */)
     {
         if (func_num_args() < 3) {
-            throw new ILess_Exception_Compiler(
-                sprintf('The `svggradient` function expects at least 3 parameters. %s given.
-            direction, start_color [start_position], [color position,]..., end_color [end_position]', func_num_args()));
+            throw new ILess_Exception_Compiler('svg-gradient expects direction, start_color [start_position], [color position,]..., end_color [end_position]');
         }
 
         $arguments = func_get_args();
@@ -1680,7 +1699,7 @@ class ILess_FunctionRegistry
                 $rectangleDimension = 'x="-50" y="-50" width="101" height="101"';
                 break;
             default:
-                throw new ILess_Exception_Compiler("The `svggradient` direction must be 'to bottom', 'to right', 'to bottom right', 'to top right' or 'ellipse at center'");
+                throw new ILess_Exception_Compiler("svg-gradient direction must be 'to bottom', 'to right', 'to bottom right', 'to top right' or 'ellipse at center'");
         }
 
         $returner = '<?xml version="1.0" ?>' .
@@ -1702,7 +1721,7 @@ class ILess_FunctionRegistry
                 || (!(($i === 0 || $i + 1 === count($stops)) && $position === null)
                     && !($position instanceof ILess_Node_Dimension))
             ) {
-                throw new ILess_Exception_Compiler('The `svggradient` function expects direction, start_color [start_position], [color position,]..., end_color [end_position]');
+                throw new ILess_Exception_Compiler('svg-gradient expects direction, start_color [start_position], [color position,]..., end_color [end_position]');
             }
 
             if ($position) {

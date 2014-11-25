@@ -90,6 +90,9 @@ class ILess_Visitor_ToCSS extends ILess_Visitor
      */
     public function visitMixinDefinition(ILess_Node_MixinDefinition $node, ILess_Visitor_Arguments $arguments)
     {
+        // mixin definitions do not get compiled - this means they keep state
+        // so we have to clear that state here so it isn't used if toCSS is called twice
+        $node->frames = array();
         return array();
     }
 
@@ -260,7 +263,7 @@ class ILess_Visitor_ToCSS extends ILess_Visitor
             $ruleNode = $rules[$i];
             if ($ruleNode instanceof ILess_Node_Rule && !$ruleNode->variable) {
                 throw new ILess_Exception_Compiler(
-                    'Properties must be inside selector blocks, they cannot be in the root.', null,
+                    'Properties must be inside selector blocks, they cannot be in the root.',
                     $ruleNode->index,
                     $ruleNode->currentFileInfo
                 );

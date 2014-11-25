@@ -23,7 +23,7 @@ class ILess_Environment
     public $frames = array();
 
     /**
-     * Cstom variables
+     * Custom variables
      *
      * @var ILess_Node_Ruleset
      */
@@ -68,6 +68,13 @@ class ILess_Environment
      * @var boolean
      */
     public $relativeUrls = false;
+
+    /**
+     * Root path
+     *
+     * @var string
+     */
+    public $rootPath;
 
     /**
      * @var array
@@ -198,13 +205,6 @@ class ILess_Environment
     public $contentsMap = array();
 
     /**
-     * Has extends? For speed improvement
-     *
-     * @var boolean
-     */
-    public $hasExtends = false;
-
-    /**
      * The function registry
      *
      * @var ILess_FunctionRegistry
@@ -320,10 +320,9 @@ class ILess_Environment
     /**
      * Sets current file
      *
-     * @param string $file The absolute path to a file
-     * @param string $urlRoot The root URL
+     * @param string $file The path to a file
      */
-    public function setCurrentFile($file, $urlRoot = null)
+    public function setCurrentFile($file)
     {
         $file = ILess_Util::normalizePath($file);
         $dirname = preg_replace('/[^\/\\\\]*$/', '', $file);
@@ -331,9 +330,9 @@ class ILess_Environment
         $this->currentFileInfo = new ILess_FileInfo(array(
             'currentDirectory' => $dirname,
             'filename' => $file,
-            'rootPath' => null, // FIXME: root path in web environment, remove?!
-            'entryPath' => $dirname,
-            'uri_root' => !empty($urlRoot) ? (rtrim($urlRoot, '/') . '/') : ''
+            'rootPath' => $this->currentFileInfo && $this->currentFileInfo->rootPath ?
+                          $this->currentFileInfo->rootPath : $this->rootPath,
+            'entryPath' => $dirname
         ));
     }
 
@@ -359,13 +358,12 @@ class ILess_Environment
             'sourceMapOptions', // options for source map generator
             'importMultiple', // whether we are currently importing multiple copies,
             'relativeUrls', // adjust relative urls?,
+            'rootPath', // root path
             'dumpLineNumbers', // dump line numbers?
             'contentsMap', // filename to contents of all the files
             // properties
             'customVariables', // variables from the php API
             'currentFileInfo', // current file information object
-            // for performance:
-            'hasExtends'
         );
 
         $copy = new ILess_Environment(array(), $env->getFunctionRegistry());

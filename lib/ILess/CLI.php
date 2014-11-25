@@ -35,7 +35,8 @@ class ILess_CLI extends ILess_Configurable
      */
     protected $defaultOptions = array(
         'silent' => false,
-        'append' => false
+        'append' => false,
+        'no_color' => false
     );
 
     /**
@@ -47,6 +48,7 @@ class ILess_CLI extends ILess_Configurable
         // option name => array(description, array of flags)
         'help' => array('Print help (this message) and exit.', array('h')),
         'silent' => array('Suppress output of error messages.', array('s')),
+        'no_color' => array('Disable colorized output.', array()),
         'compress' => array('Compress output by removing the whitespace.', array('x')),
         'append' => array('Append the generated CSS to the target file?', array('a')),
         'no_ie_compat' => array('Disable IE compatibility checks.', array()),
@@ -317,6 +319,7 @@ class ILess_CLI extends ILess_Configurable
                 // skip options which are processed above or invalid
                 case 'source_map_base_path':
                 case 'silent':
+                case 'no_color':
                 case 'append':
                     continue 2;
 
@@ -434,7 +437,45 @@ SIGNATURE;
      */
     protected function renderException(Exception $e)
     {
-        printf("%s: %s\n", $this->scriptName, $e->getMessage());
+        $hasColors = $this->detectColors();
+
+        // excerpt?
+        if ($e instanceof ILess_Exception) {
+
+            printf("%s: %s\n", $this->scriptName, $hasColors && !$this->getOption('no_color') ?
+                ILess_ANSIColor::colorize($e->toString(false), 'red') : $e->toString(false));
+
+            if ($excerpt = $e->getExcerpt()) {
+                $hasColors ?
+                    printf("%s\n", $excerpt->toTerminal()) :
+                    printf("%s\n", $excerpt->toText());
+            }
+
+        } else {
+            printf("%s: %s\n", $this->scriptName,
+                    $hasColors && !$this->getOption('no_color') ? ILess_ANSIColor::colorize($e->getMessage(), 'red') : $e->getMessage());
+        }
+    }
+
+    /**
+     * Converts the string to plain text.
+     *
+     * @return string $string The string
+     */
+    protected function toText($string)
+    {
+        return strip_tags($string);
+    }
+
+    /**
+     * Does the console support colors?
+     *
+     * @return boolean
+     */
+    protected function detectColors()
+    {
+        return (getenv('ConEmuANSI') === 'ON' || getenv('ANSICON') !== FALSE ||
+               (defined('STDOUT') && function_exists('posix_isatty') && posix_isatty(STDOUT)));
     }
 
     /**

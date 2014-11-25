@@ -19,7 +19,7 @@ class ILess_Parser extends ILess_Parser_Core
      * Parser version
      *
      */
-    const VERSION = '0.9.0-dev';
+    const VERSION = '1.6.4';
 
     /**
      * Array of output filters
@@ -181,6 +181,16 @@ class ILess_Parser extends ILess_Parser_Core
     public function addFunction($functionName, $callable, $aliases = array())
     {
         return $this->getEnvironment()->getFunctionRegistry()->addFunction($functionName, $callable, $aliases);
+    }
+
+    /**
+     * Returns the cache
+     *
+     * @return ILess_CacheInterface
+     */
+    public function getCache()
+    {
+        return $this->cache;
     }
 
 }

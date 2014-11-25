@@ -8,11 +8,11 @@
  */
 
 /**
- * Compiler exception represents an syntax error.
+ * Exception for a filesystem operation failure
  *
  * @package ILess
  * @subpackage exception
  */
-class ILess_Exception_Compiler extends ILess_Exception
+class ILess_Exception_IO extends ILess_Exception
 {
 }
