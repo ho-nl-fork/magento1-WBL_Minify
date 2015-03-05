@@ -5,7 +5,7 @@
             <groups>
                 <js>
                     <fields>
-                        <enable_yuicompressor translate="label">
+                        <enable_yuicompressor translate="label" module="wbl_minify">
                             <label>Enable YUICompress</label>
                             <comment>this allows better minifications results. (requires Java)</comment>
                             <frontend_type>select</frontend_type>
@@ -20,7 +20,7 @@
                 </js>
                 <css>
                     <fields>
-                        <lessjs translate="label">
+                        <lessjs translate="label" module="wbl_minify">
                             <label>Include less.js</label>
                             <comment><![CDATA[When <strong style="color:red;">merging</strong>
                                 isn't enabled, .less files wont be compiled to css and less.js is
@@ -34,7 +34,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </lessjs>
-                        <lessjs_watch translate="label">
+                        <lessjs_watch translate="label" module="wbl_minify">
                             <label>Enable less.js watch mode</label>
                             <comment><![CDATA[Less.js watches for file changes and updates the browser without refreshing. <strong style="color:red;">Can cause performance issues</strong>
                             ]]></comment>
