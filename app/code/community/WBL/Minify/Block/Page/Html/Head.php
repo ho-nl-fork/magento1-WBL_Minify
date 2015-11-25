@@ -261,7 +261,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
         $currentStoreGroup = Mage::app()->getStore()->getGroupId();
         if (Mage::app()->getRequest()->getControllerName() == 'product'
             || Mage::app()->getRequest()->getControllerName() == 'category'
-            || Mage::app()->getRequest()->getModuleName() == 'cms'
+//            || Mage::app()->getRequest()->getModuleName() == 'cms'
         ) {
             $storesNumberInGroup = 0;
             $storesArray = array();
