@@ -248,66 +248,205 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
 
     public function setupAlternateTag()
     {
-        if (!$this->getConfig()->isAlternateHreflangEnabled(Mage::app()->getStore()->getStoreId())) {
+        if (!$this->getConfig()->isAlternateHreflangEnabled(Mage::app()->getStore()->getStoreId()) || !$this->getAction()) {
             return;
         }
 
+        $isMagentoEe = false;
+        if (Mage::helper('mstcore/version')->getEdition() == 'ee') {
+            $isMagentoEe = true;
+        }
+
+        $fullAction = $this->getAction()->getFullActionName();
         $currentStoreGroup = Mage::app()->getStore()->getGroupId();
         if (Mage::app()->getRequest()->getControllerName() == 'product'
             || Mage::app()->getRequest()->getControllerName() == 'category'
-            || Mage::app()->getRequest()->getModuleName() == 'cms') {
+            || Mage::app()->getRequest()->getModuleName() == 'cms'
+        ) {
             $storesNumberInGroup = 0;
             $storesArray = array();
-            foreach (Mage::app()->getStores() as $store)
-            {
-                if ($store->getIsActive() && $store->getGroupId() == $currentStoreGroup) {
-                    $storesArray[] = $store;
+            $storesBaseUrls = array();
+            $xDefaultUrl = '';
+
+            foreach (Mage::app()->getStores() as $store) {
+                if ($store->getIsActive() && $store->getGroupId() == $currentStoreGroup) { //we works only with stores which have the same store group
+                    $storesArray[$store->getId()] = $store;
+                    $storesBaseUrls[$store->getId()] = $store->getBaseUrl();
                     $storesNumberInGroup++;
                 }
             }
+            $storesBaseUrlsCountValues = array_count_values($storesBaseUrls); //array with quantity of identical Base Urls
 
-            if ($storesNumberInGroup > 1 ) { //if a current store is multilanguage
-                foreach ($storesArray as $store)
-                {
-                    $url =  htmlspecialchars_decode($store->getCurrentUrl(false));
-                    $storeCode = substr(Mage::getStoreConfig('general/locale/code', $store->getId()),0,2);
-                    $addLinkRel = false;
-                    /*
-                    if (Mage::app()->getRequest()->getModuleName() == 'cms'
-                        && Mage::app()->getRequest()->getActionName() != 'noRoute') {
-                        $cmsStoresIds = Mage::getSingleton('cms/page')->getStoreId();
-                        if (in_array($store->getId(), Mage::getSingleton('cms/page')->getStoreId())
-                            || (isset($cmsStoresIds[0]) && $cmsStoresIds[0] == 0)) {
-                            $addLinkRel = true;
+            if ($storesNumberInGroup > 1) { //if a current store is multilanguage
+                $isAlternateAdded = false;
+                if (($cmsPageId = Mage::getSingleton('cms/page')->getPageId())
+                    && Mage::app()->getRequest()->getActionName() != 'noRoute'
+                ) {
+                    $cmsStoresIds = Mage::getSingleton('cms/page')->getStoreId();
+                    $cmsCollection = Mage::getModel('cms/page')->getCollection()
+                        ->addFieldToSelect('alternate_group')
+                        ->addFieldToFilter('page_id', array('eq' => $cmsPageId))
+                        ->getFirstItem();
+                    if (($alternateGroup = $cmsCollection->getAlternateGroup()) && $cmsStoresIds[0] != 0) {
+                        $cmsCollection = Mage::getModel('cms/page')->getCollection()
+                            ->addFieldToSelect(array('alternate_group', 'identifier'))
+                            ->addFieldToFilter('alternate_group', array('eq' => $alternateGroup))
+                            ->addFieldToFilter('is_active', true);
+                        $table = Mage::getSingleton('core/resource')->getTableName('cms/page_store');
+                        $cmsCollection->getSelect()
+                            ->join(array('storeTable' => $table), 'main_table.page_id = storeTable.page_id', array('store_id' => 'storeTable.store_id'));
+                        $cmsHierarchyCollection = clone $cmsCollection;
+                        $cmsPages = $cmsCollection->getData();
+                        if ($isMagentoEe) {
+                            $cmsHierarchyCollection->clear();
+                            $table = Mage::getSingleton('core/resource')->getTableName('enterprise_cms/hierarchy_node');
+                            $cmsHierarchyCollection->getSelect()->join(array('cmsHierarchyTable' => $table), 'main_table.page_id = cmsHierarchyTable.page_id', array('hierarchy_request_url' => 'request_url'));
+                            if ($cmsHierarchyPages = $cmsHierarchyCollection->getData()) {
+                                $cmsPages = array_merge_recursive($cmsHierarchyPages, $cmsPages);
+                                $storeArray = array();
+                                foreach ($cmsPages as $keyCmsPages => $valueCmsPages) {
+                                    if (in_array($valueCmsPages['store_id'], $storeArray)) {
+                                        unset($cmsPages[$keyCmsPages]);
+                                    }
+                                    $storeArray[] = $valueCmsPages['store_id'];
+                                }
+                            }
                         }
-                    }
-                    */
-                    if (Mage::app()->getRequest()->getControllerName() == 'product') {
-                        $urlAddition = strstr($url,"?"); //need if we have the same product url for every store, will add something like ?___store=frenchurl
-                        $product = Mage::registry('current_product');
-                        if (!$product) {
-                            return;
+                        if (count($cmsPages) > 0) {
+                            $alternateLinks = array();
+                            foreach ($cmsPages as $page) {
+                                $pageIdentifier = ($isMagentoEe && isset($page['hierarchy_request_url'])) ? $page['hierarchy_request_url'] : $page['identifier'];
+                                $url = ($fullAction == 'cms_index_index') ? Mage::app()->getStore($page['store_id'])->getBaseUrl() : Mage::app()->getStore($page['store_id'])->getBaseUrl() . $pageIdentifier;
+                                $alternateLinks[$page['store_id']] = $url;
+                            }
+                            if (count($alternateLinks) > 0) {
+                                foreach ($alternateLinks as $storeId => $storeUrl) {
+                                    //need if we have the same product url for every store, will add something like ?___store=frenchurl
+                                    $urlAddition = (isset($storesBaseUrlsCountValues[$storesArray[$storeId]->getBaseUrl()]) && $storesBaseUrlsCountValues[$storesArray[$storeId]->getBaseUrl()] > 1) ? strstr(htmlspecialchars_decode($storesArray[$storeId]->getCurrentUrl(false)), "?") : '';
+                                    $urlAddition = $this->getPreparedUrlAdditionalForCms($urlAddition);
+                                    $storeCodeCms = substr(Mage::getStoreConfig('general/locale/code', $storeId), 0, 2);
+                                    if ($urlAddition && !$xDefaultUrl) { //x-default alternate
+                                        $xDefaultUrl = $storeUrl;
+                                    }
+                                    if ($localeCodeCms = $this->getConfig()->getHreflangLocaleCode($storeId)) { //hreflang locale code
+                                        $storeCodeCms .= "-" . $localeCodeCms;
+                                    }
+                                    $this->addLinkRel('alternate"' . ' hreflang="' . $storeCodeCms, $storeUrl . $urlAddition . " ");
+                                }
+
+                                $isAlternateAdded = true;
+
+                            }
                         }
-                        $category = Mage::registry('current_category');
-                        $category ? $categoryId = $category->getId() : $categoryId = null;
-                        $url = $store->getBaseUrl() . $this->getAlternateProductUrl($product->getId(), $categoryId, $store->getId()) . $urlAddition;
-                        $addLinkRel = true;
-                    }
-                    if (Mage::app()->getRequest()->getControllerName() == 'category') {
-                        $collection = Mage::getModel('catalog/category')->getCollection()
-                            ->setStoreId($store->getId())
-                            ->addFieldToFilter('is_active', array('eq'=>'1'))
-                            ->addFieldToFilter('entity_id', array('eq'=>Mage::registry('current_category')->getId()))
-                            ->getFirstItem();
-                        if($collection->hasData()) {
-                            $addLinkRel = true;
-                        }
-                    }
-                    if ($addLinkRel) {
-                        $this->addLinkRel('alternate"' . ' hreflang="' . $storeCode, $url);
                     }
                 }
+
+                if (!$isAlternateAdded) {
+                    $currentStore = Mage::app()->getStore()->getId();
+                    foreach ($storesArray as $store) {
+                        $storeCode = substr(Mage::getStoreConfig('general/locale/code', $store->getId()), 0, 2);
+                        $addLinkRel = false;
+                        //need if we have the same product url for every store, will add something like ?___store=frenchurl
+                        $urlAddition = (isset($storesBaseUrlsCountValues[$store->getBaseUrl()]) && $storesBaseUrlsCountValues[$store->getBaseUrl()] > 1) ? strstr(htmlspecialchars_decode($store->getCurrentUrl(false)), "?") : '';
+                        if (Mage::app()->getRequest()->getModuleName() == 'cms'
+                            && Mage::app()->getRequest()->getActionName() != 'noRoute'
+                        ) {
+                            $cmsStoresIds = Mage::getSingleton('cms/page')->getStoreId();
+                            if (in_array($store->getId(), Mage::getSingleton('cms/page')->getStoreId())
+                                || (isset($cmsStoresIds[0]) && $cmsStoresIds[0] == 0)
+                            ) {
+                                $urlAdditionCms = $this->getPreparedUrlAdditionalForCms($urlAddition);
+                                if ($isMagentoEe
+                                    && ($currentNode = Mage::registry('current_cms_hierarchy_node'))
+                                    && ($cmsHierarchyRequestUrl = $currentNode->getRequestUrl())
+                                ) {
+                                    $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . $cmsHierarchyRequestUrl . $urlAdditionCms;
+                                } else {
+                                    $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . Mage::getSingleton('cms/page')->getIdentifier() . $urlAdditionCms;
+                                }
+                                $addLinkRel = true;
+                            }
+                        }
+                        if (Mage::app()->getRequest()->getControllerName() == 'product') {
+                            $product = Mage::registry('current_product');
+                            if (!$product) {
+                                return;
+                            }
+                            $category = Mage::registry('current_category');
+                            $category ? $categoryId = $category->getId() : $categoryId = null;
+                            if ($isMagentoEe) {
+                                $url = $store->getBaseUrl() . $this->getEeAlternateProductUrl() . $urlAddition;
+                            } else {
+                                $url = $store->getBaseUrl() . $this->getAlternateProductUrl($product->getId(), $categoryId, $store->getId()) . $urlAddition;
+                            }
+                            $addLinkRel = true;
+                        }
+                        if (Mage::app()->getRequest()->getControllerName() == 'category') {
+                            $currentStoreUrl = $store->getCurrentUrl(false);
+                            $currentUrl = Mage::helper('core/url')->getCurrentUrl();
+                            $category = Mage::getModel('catalog/category')->getCollection()
+                                ->setStoreId($store->getId())
+                                ->addFieldToFilter('is_active', array('eq' => '1'))
+                                ->addFieldToFilter('entity_id', array('eq' => Mage::registry('current_category')->getId()))
+                                ->getFirstItem();
+
+                            if ($category->hasData() && ($currentCategory = Mage::getModel('catalog/category')->setStoreId($store->getId())->load($category->getEntityId()))) {
+                                $categoryUrl = $store->getBaseUrl() . $currentCategory->getUrlPath() . $urlAddition;
+                                $categoryUrlPath = $currentCategory->getUrlPath();
+                                $requestString = Mage::getSingleton('core/url')->escape(ltrim(Mage::app()->getRequest()->getRequestString(), '/'));
+                                if ($suffix = Mage::helper('catalog/category')->getCategoryUrlSuffix($store->getId())) {
+                                    $currentStoreSuffix = Mage::helper('catalog/category')->getCategoryUrlSuffix(Mage::app()->getStore()->getStoreId());
+                                    //add correct suffix for every store
+                                    $requestString = preg_replace('/' . $currentStoreSuffix . '$/ims', $suffix, $requestString);
+                                    $categoryUrlPath = preg_replace('/' . $suffix . '$/ims', '', $categoryUrlPath);
+                                }
+
+                                if (strpos($requestString, $categoryUrlPath) === false) { //create correct category way for every store, need if category use different path
+                                    $slashCountCategoryUrlPath = substr_count($categoryUrlPath, '/');
+                                    $slashCountRequestString = substr_count($requestString, '/');
+                                    $requestStringParts = explode('/', $requestString);
+                                    $requestStringCategoryPart = implode('/', array_slice($requestStringParts, 0, $slashCountCategoryUrlPath + 1));
+                                    if ($slashCountCategoryUrlPath == $slashCountRequestString && $suffix) {
+                                        $requestString = str_replace($requestStringCategoryPart, $categoryUrlPath, $requestString) . $suffix;
+                                    } else {
+                                        $requestString = str_replace($requestStringCategoryPart, $categoryUrlPath, $requestString);
+                                    }
+                                }
+                                $preparedUrlAdditionCurrent = $this->getUrlAdditionalParsed(strstr($currentUrl, "?"));
+                                $preparedUrlAdditionStore = $this->getUrlAdditionalParsed($urlAddition);
+                                $urlAdditionCategory = $this->getPreparedUrlAdditional($preparedUrlAdditionCurrent, $preparedUrlAdditionStore);
+
+                                if ($this->_useAlgoritmForDifferentAttributes) { // need if store use different attributes name
+                                    $requestString = $this->getFilterPageRequestString($store->getId(), $requestString, $categoryUrlPath, $storesArray);
+                                }
+                                $url = $store->getBaseUrl() . $requestString . $urlAdditionCategory;
+                            }
+
+                            $addLinkRel = true;
+                        }
+
+                        if ($addLinkRel && isset($url)) { //need to don't break store if $url not exist
+                            if ($urlAddition && !$xDefaultUrl) { //x-default alternate
+                                $xDefaultUrl = $url;
+                            }
+                            if ($localeCode = $this->getConfig()->getHreflangLocaleCode($store->getId())) { //hreflang locale code
+                                $storeCode .= "-" . $localeCode;
+                            }
+                            // echo "storeCode: ".$storeCode ." ||| alternate url: ". $url . "<br/>";
+                            $this->addLinkRel('alternate"' . ' hreflang="' . $storeCode, $url . " ");
+                            $isAlternateAdded = true;
+                        }
+                    }
+                }
+
+                //x-default alternate
+                if ($isAlternateAdded && $xDefaultUrl) {
+                    $xDefaultUrl = $this->getPreparedXDefaultUrl($xDefaultUrl);
+                    // echo "storeCode: x-default ||| alternate url: ". $url . "<br/>";
+                    $this->addLinkRel('alternate"' . ' hreflang="x-default', $xDefaultUrl . " ");
+                }
             }
+
         }
     }
 
