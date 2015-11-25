@@ -272,6 +272,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                     $url =  htmlspecialchars_decode($store->getCurrentUrl(false));
                     $storeCode = substr(Mage::getStoreConfig('general/locale/code', $store->getId()),0,2);
                     $addLinkRel = false;
+                    /*
                     if (Mage::app()->getRequest()->getModuleName() == 'cms'
                         && Mage::app()->getRequest()->getActionName() != 'noRoute') {
                         $cmsStoresIds = Mage::getSingleton('cms/page')->getStoreId();
@@ -280,6 +281,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                             $addLinkRel = true;
                         }
                     }
+                    */
                     if (Mage::app()->getRequest()->getControllerName() == 'product') {
                         $urlAddition = strstr($url,"?"); //need if we have the same product url for every store, will add something like ?___store=frenchurl
                         $product = Mage::registry('current_product');
