@@ -397,8 +397,8 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                                 if ($suffix = Mage::helper('catalog/category')->getCategoryUrlSuffix($store->getId())) {
                                     $currentStoreSuffix = Mage::helper('catalog/category')->getCategoryUrlSuffix(Mage::app()->getStore()->getStoreId());
                                     //add correct suffix for every store
-                                    $requestString = preg_replace('/' . $currentStoreSuffix . '$/ims', $suffix, $requestString);
-                                    $categoryUrlPath = preg_replace('/' . $suffix . '$/ims', '', $categoryUrlPath);
+                                    $requestString = preg_replace('~' . $currentStoreSuffix . '$~ims', $suffix, $requestString);
+                                    $categoryUrlPath = preg_replace('~' . $suffix . '$~ims', '', $categoryUrlPath);
                                 }
 
                                 if (strpos($requestString, $categoryUrlPath) === false) { //create correct category way for every store, need if category use different path
