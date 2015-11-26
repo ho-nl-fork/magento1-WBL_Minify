@@ -261,7 +261,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
         $currentStoreGroup = Mage::app()->getStore()->getGroupId();
         if (Mage::app()->getRequest()->getControllerName() == 'product'
             || Mage::app()->getRequest()->getControllerName() == 'category'
-//            || Mage::app()->getRequest()->getModuleName() == 'cms'
+            || Mage::app()->getRequest()->getModuleName() == 'cms'
         ) {
             $storesNumberInGroup = 0;
             $storesArray = array();
@@ -351,21 +351,16 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                         if (Mage::app()->getRequest()->getModuleName() == 'cms'
                             && Mage::app()->getRequest()->getActionName() != 'noRoute'
                         ) {
-                            $cmsStoresIds = Mage::getSingleton('cms/page')->getStoreId();
-                            if (in_array($store->getId(), Mage::getSingleton('cms/page')->getStoreId())
-                                || (isset($cmsStoresIds[0]) && $cmsStoresIds[0] == 0)
+                            $urlAdditionCms = $this->getPreparedUrlAdditionalForCms($urlAddition);
+                            if ($isMagentoEe
+                                && ($currentNode = Mage::registry('current_cms_hierarchy_node'))
+                                && ($cmsHierarchyRequestUrl = $currentNode->getRequestUrl())
                             ) {
-                                $urlAdditionCms = $this->getPreparedUrlAdditionalForCms($urlAddition);
-                                if ($isMagentoEe
-                                    && ($currentNode = Mage::registry('current_cms_hierarchy_node'))
-                                    && ($cmsHierarchyRequestUrl = $currentNode->getRequestUrl())
-                                ) {
-                                    $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . $cmsHierarchyRequestUrl . $urlAdditionCms;
-                                } else {
-                                    $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . Mage::getSingleton('cms/page')->getIdentifier() . $urlAdditionCms;
-                                }
-                                $addLinkRel = true;
+                                $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . $cmsHierarchyRequestUrl . $urlAdditionCms;
+                            } else {
+                                $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . Mage::getSingleton('cms/page')->getIdentifier() . $urlAdditionCms;
                             }
+                            $addLinkRel = true;
                         }
                         if (Mage::app()->getRequest()->getControllerName() == 'product') {
                             $product = Mage::registry('current_product');
