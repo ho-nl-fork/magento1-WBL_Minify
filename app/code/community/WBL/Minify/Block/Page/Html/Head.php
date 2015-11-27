@@ -237,10 +237,13 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
             }
         }
 
-
+        
         $page = (int)Mage::app()->getRequest()->getParam('p');
-        if ($page > 1) {
-            $canonicalUrl .= "?p=$page";
+        // if ($page > 1) {
+        //     $canonicalUrl .= "?p=$page";
+        // }
+        if ($page == 2) {
+            $canonicalUrl .= " ";
         }
 
         $this->addLinkRel('canonical', $canonicalUrl);
