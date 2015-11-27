@@ -372,7 +372,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                             $addLinkRel = true;
                         }
                         if (Mage::app()->getRequest()->getModuleName() == 'amlanding') {
-                            $url = $store->getBaseUrl() . ltrim(Mage::app()->getRequest()->getParam('am_landing'), '/');
+                            $url = $store->getBaseUrl() . ltrim(Mage::app()->getRequest()->getParam('am_landing'), '/') . '/';
                             $addLinkRel = true;
                         }
                         if (Mage::app()->getRequest()->getControllerName() == 'product') {
