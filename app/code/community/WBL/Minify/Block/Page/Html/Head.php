@@ -368,13 +368,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                             $addLinkRel = true;
                         }
                         if (Mage::app()->getRequest()->getModuleName() == 'amlanding') {
-                            $url = $store->getBaseUrl() . ltrim(Mage::app()->getRequest()->getRequestString(), '/');
-
-                            // For some reason the category filter is passed as GET parameter, so handling that as a special case
-                            $catId = Mage::app()->getRequest()->getParam('cat');
-                            if ($catId) {
-                                $url .= "?cat=$catId";
-                            }
+                            $url = $store->getBaseUrl() . ltrim(Mage::app()->getRequest()->getParam('am_landing'), '/');
                             $addLinkRel = true;
                         }
                         if (Mage::app()->getRequest()->getControllerName() == 'product') {
