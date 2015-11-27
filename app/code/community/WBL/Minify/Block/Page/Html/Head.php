@@ -265,6 +265,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
         if (Mage::app()->getRequest()->getControllerName() == 'product'
             || Mage::app()->getRequest()->getControllerName() == 'category'
             || Mage::app()->getRequest()->getModuleName() == 'cms'
+            || Mage::app()->getRequest()->getModuleName() == 'amlanding'
         ) {
             $storesNumberInGroup = 0;
             $storesArray = array();
@@ -346,6 +347,7 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
 
                 if (!$isAlternateAdded) {
                     $currentStore = Mage::app()->getStore()->getId();
+                    /** @var Mage_Core_Model_Store $store */
                     foreach ($storesArray as $store) {
                         $storeCode = substr(Mage::getStoreConfig('general/locale/code', $store->getId()), 0, 2);
                         $addLinkRel = false;
@@ -362,6 +364,16 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                                 $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . $cmsHierarchyRequestUrl . $urlAdditionCms;
                             } else {
                                 $url = ($fullAction == 'cms_index_index') ? $store->getBaseUrl() . $urlAdditionCms : $store->getBaseUrl() . Mage::getSingleton('cms/page')->getIdentifier() . $urlAdditionCms;
+                            }
+                            $addLinkRel = true;
+                        }
+                        if (Mage::app()->getRequest()->getModuleName() == 'amlanding') {
+                            $url = $store->getBaseUrl() . ltrim(Mage::app()->getRequest()->getRequestString(), '/');
+
+                            // For some reason the category filter is passed as GET parameter, so handling that as a special case
+                            $catId = Mage::app()->getRequest()->getParam('cat');
+                            if ($catId) {
+                                $url .= "?cat=$catId";
                             }
                             $addLinkRel = true;
                         }
