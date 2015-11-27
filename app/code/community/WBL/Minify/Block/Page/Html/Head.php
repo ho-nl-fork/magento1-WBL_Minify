@@ -130,6 +130,10 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
             return;
         }
 
+        if (Mage::app()->getRequest()->getModuleName() == 'amlanding') {
+            return;
+        }
+
         $fullAction = $this->getAction()->getFullActionName();
         foreach ($this->getConfig()->getCanonicalUrlIgnorePages() as $page) {
             if (Mage::helper('seo')->checkPattern($fullAction, $page)
