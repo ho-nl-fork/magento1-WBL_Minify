@@ -417,7 +417,8 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
                                 if ($this->_useAlgoritmForDifferentAttributes) { // need if store use different attributes name
                                     $requestString = $this->getFilterPageRequestString($store->getId(), $requestString, $categoryUrlPath, $storesArray);
                                 }
-                                $url = $store->getBaseUrl() . $requestString . $urlAdditionCategory;
+                                //$url = $store->getBaseUrl() . $requestString . $urlAdditionCategory;
+                                $url = $store->getBaseUrl() . $categoryUrlPath . "/";
                             }
 
                             $addLinkRel = true;
