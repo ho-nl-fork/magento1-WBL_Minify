@@ -144,8 +144,8 @@ class WBL_Minify_Block_Page_Html_Head extends WBL_Minify_Block_Page_Html_Head_Ab
 
         $productActions = array(
             'catalog_product_view',
-            'review_product_list',
-            'review_product_view',
+            //'review_product_list',
+            //'review_product_view',
             'productquestions_show_index',
         );
 
