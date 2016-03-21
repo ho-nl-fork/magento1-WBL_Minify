@@ -182,9 +182,15 @@ class WBL_Minify_Block_Page_Html_Head extends Mage_Page_Block_Html_Head
         }
 
         // prepare HTML
+
         $shouldMergeJs = Mage::getStoreConfigFlag('dev/js/merge_files');
         $shouldMergeCss = Mage::getStoreConfigFlag('dev/css/merge_css_files');
         $html   = '';
+
+        if($this->getRequest()->getRouteName() == "mpblog"){
+            $shouldMergeJs = 0;
+        }
+
         foreach ($lines as $group => $ifs) {
             $html .= "<!--group: $group-->\n";
             foreach ($ifs as $if => $items) {
