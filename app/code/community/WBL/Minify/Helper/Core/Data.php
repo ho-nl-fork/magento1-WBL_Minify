@@ -1,6 +1,6 @@
 <?php
 
-if (Mage::helper('core')->isModuleEnabled('Inchoo_PHP7')) {
+if (@class_exists('Inchoo_PHP7_Helper_Data')) {
     class WBL_Minify_Helper_Core_Data_Extend extends Inchoo_PHP7_Helper_Data {}
 } else {
     class WBL_Minify_Helper_Core_Data_Extend extends Mage_Core_Helper_Data {}
