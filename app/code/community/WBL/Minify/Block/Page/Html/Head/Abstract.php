@@ -23,6 +23,8 @@
 
 if (Mage::helper('core')->isModuleEnabled('Aoe_JsCssTstamp')) {
     class WBL_Minify_Block_Page_Html_Head_Abstract extends Aoe_JsCssTstamp_Block_Head {}
+} elseif ((string)Mage::getConfig()->getModuleConfig('Diglin_UIOptimization')->active == 'true') {
+    class WBL_Minify_Block_Page_Html_Head_Abstract extends Diglin_UIOptimization_Block_Optimize_Head {}
 } else {
     class WBL_Minify_Block_Page_Html_Head_Abstract extends Mage_Page_Block_Html_Head {}
 }
