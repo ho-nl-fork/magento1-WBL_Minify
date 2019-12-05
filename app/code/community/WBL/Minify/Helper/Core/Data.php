@@ -22,6 +22,17 @@ class WBL_Minify_Helper_Core_Data extends WBL_Minify_Helper_Core_Data_Extend
         return Mage::getStoreConfigFlag(self::XML_PATH_MINIFY_ENABLE_YUICOMPRESSOR);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function urlDecodeAndEscape($url)
+    {
+        $url = $this->urlDecode($url);
+        $quote = array ('\'', '"');
+        $replace = array('%27', '%22');
+        $url = str_replace($quote, $replace, $url);
+        return $url;
+    }
 
     /**
      * @param string $data
